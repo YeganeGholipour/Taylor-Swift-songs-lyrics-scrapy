@@ -1,10 +1,3 @@
-# Define your item pipelines here
-#
-# Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-
-
-# useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
 import psycopg2
 from psycopg2 import sql
@@ -36,55 +29,44 @@ class SaveToPostgresPipeline:
         )
 
         self.cur.execute(
-        """
-        CREATE TABLE IF NOT EXISTS lyrics(
-            id SERIAL PRIMARY KEY,
-            song_name TEXT,
-            lyrics TEXT,
-            UNIQUE(song_name)
-        )
-        """
+            """
+            CREATE TABLE IF NOT EXISTS lyrics(
+                id SERIAL PRIMARY KEY,
+                song_name TEXT,
+                lyrics TEXT,
+                url TEXT,
+                UNIQUE(song_name)
+            )
+            """
         )
 
         self.conn.commit()
 
     def process_item(self, item, spider):
-        # try:
-        #     self.cur.execute(
-        #         """
-        #         INSERT INTO songs (song_name)
-        #         VALUES (%s)
-        #         ON CONFLICT (song_name) DO NOTHING
-        #         """,
-        #         (item['song_name'],)
-        #     )
-        #     self.conn.commit()
-        # except psycopg2.Error as e:
-        #     spider.logger.error(f"Error inserting item: {e}")
-        #     self.conn.rollback()
-        # return item
-
-        if spider.name == 'songslistspider':
-            self.cur.execute(
-                """
-                INSERT INTO songs (song_name)
-                VALUES (%s)
-                ON CONFLICT (song_name) DO NOTHING
-                """,
-                (item['song_name'],)
-            )
-        elif spider.name == 'taylorspider':
-            self.cur.execute(
-                """
-                INSERT INTO lyrics (song_name, lyrics, url)
-                VALUES (%s, %s, %s)
-                ON CONFLICT (song_name) DO NOTHING
-                """,
-                (item['song_name'], item['lyrics'], item['url'])
-            )
-        self.conn.commit()
+        try:
+            if spider.name == 'songslistspider':
+                self.cur.execute(
+                    """
+                    INSERT INTO songs (song_name)
+                    VALUES (%s)
+                    ON CONFLICT (song_name) DO NOTHING
+                    """,
+                    (item['song_name'],)
+                )
+            elif spider.name == 'taylorspider':
+                self.cur.execute(
+                    """
+                    INSERT INTO lyrics (song_name, lyrics, url)
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT (song_name) DO NOTHING
+                    """,
+                    (item['song_name'], item['lyrics'], item['url'])
+                )
+            self.conn.commit()
+        except psycopg2.Error as e:
+            spider.logger.error(f"Error inserting item: {e}")
+            self.conn.rollback()
         return item
-
 
     def close_spider(self, spider):
         self.cur.close()
