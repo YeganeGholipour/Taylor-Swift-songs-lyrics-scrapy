@@ -29,10 +29,10 @@ pip install -r requirements.txt
 
   Run the spiders to scrape Taylor Swift's song list from Wikipedia and fetch lyrics from Genius:
 
-    ```bash
-    scrapy crawl songslistspider
-    scrapy crawl taylorspider
-    ```
+```bash
+scrapy crawl songslistspider
+scrapy crawl taylorspider
+```
 
   Check the PostgreSQL database to verify the scraped data.
 
