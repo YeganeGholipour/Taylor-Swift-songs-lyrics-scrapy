@@ -47,7 +47,7 @@ class TaylorspiderSpider(scrapy.Spider):
         song_name = response.meta['song_name']
         lyrics_div = response.css('div.Lyrics__Container-sc-1ynbvzw-1.kUgSbL')
         lyrics_text = lyrics_div.css('::text, a::text, span::text').getall() 
-        lyrics_text = ''.join(lyrics_text).strip()
+        lyrics_text = ' '.join(lyrics_text)
 
         lyrics_item['song_name'] = song_name
         lyrics_item['lyrics'] = lyrics_text
@@ -55,16 +55,16 @@ class TaylorspiderSpider(scrapy.Spider):
 
         return lyrics_item
     
-    def clean_lyrics(self, lyrics):
-        # Remove [Verse], [Chorus], etc.
-        lyrics = re.sub(r'\[.*?\]', '', lyrics)
-        # Replace escaped unicode characters with a space
-        lyrics = lyrics.replace('\u2005', ' ')
-        # Replace multiple spaces with a single space
-        lyrics = re.sub(r'\s+', ' ', lyrics)
-        # Add line breaks after periods for readability (optional)
-        lyrics = re.sub(r'(?<!\.\.\.)([.!?])', r'\1\n', lyrics)
-        # Strip leading and trailing spaces
-        lyrics = lyrics.strip()
-        return lyrics
+    # def clean_lyrics(self, lyrics):
+    #     # Remove [Verse], [Chorus], etc.
+    #     lyrics = re.sub(r'\[.*?\]', '', lyrics)
+    #     # Replace escaped unicode characters with a space
+    #     lyrics = lyrics.replace('\u2005', ' ')
+    #     # Replace multiple spaces with a single space
+    #     lyrics = re.sub(r'\s+', ' ', lyrics)
+    #     # Add line breaks after periods for readability (optional)
+    #     lyrics = re.sub(r'(?<!\.\.\.)([.!?])', r'\1\n', lyrics)
+    #     # Strip leading and trailing spaces
+    #     lyrics = lyrics.strip()
+    #     return lyrics
 
